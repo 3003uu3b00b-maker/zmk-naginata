@@ -478,6 +478,14 @@ void ng_type(NGList *keys) {
         return;
     }
 
+    // SPACE単独押しは実際のSPACEキーを送信（IME変換用）
+    if (keys->size == 1 && keys->elements[0] == SPACE) {
+        LOG_DBG(" NAGINATA type keycode 0x%02X", SPACE);
+        raise_zmk_keycode_state_changed_from_encoded(SPACE, true, timestamp);
+        raise_zmk_keycode_state_changed_from_encoded(SPACE, false, timestamp);
+        return;
+    }
+
     uint32_t keyset = 0UL;
     for (int i = 0; i < keys->size; i++) {
         keyset |= ng_key[keys->elements[i] - A];
