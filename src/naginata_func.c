@@ -789,6 +789,10 @@ void ng_saihenkan() {
 // behavior_naginata.c の last_kana を参照
 extern uint8_t last_kana[];
 
+#ifndef NONE
+#define NONE 0
+#endif
+
 void ng_kogaki(void) {
     // last_kanaの有効文字数を数える
     int len = 0;
