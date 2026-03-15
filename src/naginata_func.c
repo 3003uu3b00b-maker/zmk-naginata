@@ -785,6 +785,34 @@ void ng_saihenkan() {
     }
 }
 
+// 直前のかなを小書きに変換する（例: よ→ょ、つ→っ）
+// behavior_naginata.c の last_kana を参照
+extern uint8_t last_kana[];
+
+void ng_kogaki(void) {
+    // last_kanaの有効文字数を数える
+    int len = 0;
+    for (int i = 0; i < 6; i++) {
+        if (last_kana[i] == NONE) break;
+        len++;
+    }
+    if (len == 0) return;
+
+    // IME変換バッファから直前の1文字を削除
+    raise_zmk_keycode_state_changed_from_encoded(BSPC, true, timestamp);
+    raise_zmk_keycode_state_changed_from_encoded(BSPC, false, timestamp);
+
+    // Xプレフィックスを送信（ローマ字入力で小書きにする）
+    raise_zmk_keycode_state_changed_from_encoded(X, true, timestamp);
+    raise_zmk_keycode_state_changed_from_encoded(X, false, timestamp);
+
+    // 元のローマ字を再送信（X+元のローマ字で小文字になる）
+    for (int i = 0; i < len; i++) {
+        raise_zmk_keycode_state_changed_from_encoded(last_kana[i], true, timestamp);
+        raise_zmk_keycode_state_changed_from_encoded(last_kana[i], false, timestamp);
+    }
+}
+
 void ng_eof() {
     switch (naginata_config.os) {
     case NG_WINDOWS:

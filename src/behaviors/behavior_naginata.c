@@ -99,6 +99,9 @@ typedef struct {
     void (*func)(void);
 } naginata_kanamap;
 
+// 直前に出力したかなのローマ字を保持（小書き変換用）
+uint8_t last_kana[6] = {NONE, NONE, NONE, NONE, NONE, NONE};
+
 static naginata_kanamap ngdickana[] = {
     // 清音
     {.shift = NONE    , .douji = B_J            , .kana = {A, NONE, NONE, NONE, NONE, NONE}, .func = nofunc }, // あ
@@ -303,7 +306,7 @@ static naginata_kanamap ngdickana[] = {
     // 追加
     {.shift = NONE    , .douji = B_SPACE        , .kana = {SPACE, NONE, NONE, NONE, NONE, NONE  }, .func = nofunc},
     {.shift = B_SPACE , .douji = B_V            , .kana = {COMMA, ENTER, NONE, NONE, NONE, NONE }, .func = nofunc},
-    {.shift = NONE    , .douji = B_Q            , .kana = {NONE, NONE, NONE, NONE, NONE, NONE   }, .func = nofunc},
+    {.shift = NONE    , .douji = B_Q            , .kana = {NONE, NONE, NONE, NONE, NONE, NONE   }, .func = ng_kogaki}, // 小書き変換
     {.shift = B_SPACE , .douji = B_M            , .kana = {DOT, ENTER, NONE, NONE, NONE, NONE   }, .func = nofunc},
     {.shift = NONE    , .douji = B_U            , .kana = {BSPC, NONE, NONE, NONE, NONE, NONE   }, .func = nofunc},
 
@@ -494,6 +497,10 @@ void ng_type(NGList *keys) {
     for (int i = 0; i < sizeof ngdickana / sizeof ngdickana[0]; i++) {
         if ((ngdickana[i].shift | ngdickana[i].douji) == keyset) {
             if (ngdickana[i].kana[0] != NONE) {
+                // 直前のかな出力を保存（小書き変換用）
+                for (int k = 0; k < 6; k++) {
+                    last_kana[k] = ngdickana[i].kana[k];
+                }
                 for (int k = 0; k < 6; k++) {
                     if (ngdickana[i].kana[k] == NONE)
                         break;
